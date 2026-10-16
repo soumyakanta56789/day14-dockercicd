@@ -45,14 +45,10 @@ jobs:
           docker logs api
           exit 1
 
-      # Fix: Direct CLI approach avoids the broken aquasecurity market action release bug
+      # Fix: Downloads the direct standalone executable to avoid buggy apt-get repository updates
       - name: Install and Run Trivy Scan
         run: |
-          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
-          wget -qO - https://github.io | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://github.io $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
-          sudo apt-get update
-          sudo apt-get install trivy -y
+          curl -sfL https://githubusercontent.com | sh -s -- -b /usr/local/bin
           trivy image --severity HIGH,CRITICAL --ignore-unfixed ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Login to Docker Hub

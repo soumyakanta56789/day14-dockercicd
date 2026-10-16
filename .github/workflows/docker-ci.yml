@@ -45,14 +45,15 @@ jobs:
           docker logs api
           exit 1
 
-      - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@v0.29.0
-        with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          format: table
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: 1
+      # Fix: Direct CLI approach avoids the broken aquasecurity market action release bug
+      - name: Install and Run Trivy Scan
+        run: |
+          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://github.io | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://github.io $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy -y
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Login to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

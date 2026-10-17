@@ -9,7 +9,8 @@ permissions:
   contents: read
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/winter-arc-app
+  # Fix: Updated to match your exact Docker Hub repository name
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/winterarc-day14
 
 jobs:
   build-test-scan:
@@ -45,7 +46,6 @@ jobs:
           docker logs api
           exit 1
 
-      # Fix: Using the official Docker version of Trivy avoids installation issues completely
       - name: Run Trivy Scan
         run: |
           docker run --rm \

@@ -45,11 +45,12 @@ jobs:
           docker logs api
           exit 1
 
-      # Fix: Added sudo to allow the installer to successfully write the binary to /usr/local/bin
-      - name: Install and Run Trivy Scan
+      # Fix: Using the official Docker version of Trivy avoids installation issues completely
+      - name: Run Trivy Scan
         run: |
-          curl -sfL https://githubusercontent.com | sudo sh -s -- -b /usr/local/bin
-          trivy image --severity HIGH,CRITICAL --ignore-unfixed ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image --severity HIGH,CRITICAL --ignore-unfixed ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Login to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
